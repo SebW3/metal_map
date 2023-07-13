@@ -1,6 +1,7 @@
 # This code changes link to search for active band with exact name (only active bands play)
 # Then it waits for scripts to load and extracts band genre for later use
 # TODO rebuild this "API" to not use user browser
+# TODO there is a possibility for multiple bands with same name to be active
 from bs4 import BeautifulSoup
 from selenium import webdriver
 import time
@@ -34,9 +35,9 @@ def get_genre(band_name):
             return None
 
     result = find_content(soup)
-    if result:
-        temp = result.split("class")
-        band_genre = temp[2][4:-9]
-        return band_genre
-    else:
+    if "No matches found. Please try with different search terms." in result:
         return None
+
+    temp = result.split("class")
+    band_genre = temp[2][4:-9]
+    return band_genre
