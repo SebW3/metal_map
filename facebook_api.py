@@ -37,44 +37,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 def event_Thrash_Attack_Lublin(event_link):
-    driver = webdriver.Firefox()
-    driver.get(event_link)
-
-    time.sleep(3)
-
-    # Pobierz zawartość strony
-    page_content = driver.page_source
-    #print(page_content)
-
-    # # Poczekaj maksymalnie 10 sekund, aż przycisk pojawi się na stronie
-    # wait = WebDriverWait(driver, 1)
-    # decline_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Decline optional cookies')]")))
-
-    # Znajdź przycisk na stronie
-    try:
-        decline_button = driver.find_element(By.XPATH, "//button[contains(text(), 'Decline optional cookies')]")
-        print("próbowałem")
-        # Kliknij przycisk, jeśli jest widoczny i aktywny
-        if decline_button.is_displayed() and decline_button.is_enabled():
-            decline_button.click()
-            print("znaleziono")
-    except:
-        pass
-        print("chuj nie działa")
-
-    # Kliknij przycisk
-    #decline_button.click()
-
-    # Poczekaj kolejne 3 sekundy, aby upewnić się, że strona zdążyła się załadować po kliknięciu
-    time.sleep(3)
-
-    # Pobierz zawartość strony
-    page_content = driver.page_source
-    driver.quit()
-
-    soup = BeautifulSoup(page_content, 'html.parser')
-    soup = soup.decode()
-    print(soup)
+    #TODO code from below here
 
 event_link = from_Thrash_Attack_Lublin()
 print(event_link)
