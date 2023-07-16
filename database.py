@@ -10,8 +10,8 @@ connection = mysql.connector.connect(
     password=password,
     database=database
 )
-
-cursor = connection.cursor()
+cursor= connection.cursor()
+print("Connected do database")
 
 # TODO gathering band names
 band_name = "Metallica"
@@ -48,13 +48,29 @@ def add_band_genre(band_name):
 #     #add_band_genre(band_name)
 
 def add_band_info_to_database(band_name):
-
     # chceck if band genre already exists
     cursor.execute("SELECT band_name FROM bands WHERE band_name = %s", (band_name,))
     temp = cursor.fetchone()
     print(temp)
     if temp == None:
         instert_band_name_and_genre(band_name)
+
+def chceck_source(country, site, page, name):  # TODO think of something better
+    connection = mysql.connector.connect(  # TODO find a way to avoid copying this
+        host=host,
+        user=user,
+        password=password,
+        database=database
+    )
+    cursor = connection.cursor()
+    print("Connected do database")
+
+
+    if name == "Thrash Attack Lublin":
+        cursor.execute("SELECT number FROM concerts_info_source WHERE name = %s", (name,))
+        cursor.close()
+        connection.close()
+        return cursor.fetchone()
 
 cursor.close()
 connection.close()

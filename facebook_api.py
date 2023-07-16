@@ -1,10 +1,13 @@
-# TODO scraping the same way like in metalarchives.py
 from bs4 import BeautifulSoup
 from selenium import webdriver
 import time
 import re
+import facebook
+from logins import facebook_api_login
+from database import chceck_source
 
-def from_Thrash_Attack_Lublin():
+
+def from_Thrash_Attack_Lublin():  # TODO rebuild this but good enough for now
     url = "https://www.facebook.com/ThrashAttackLublin"
     driver = webdriver.Firefox()
     driver.get(url)
@@ -17,8 +20,9 @@ def from_Thrash_Attack_Lublin():
     soup = soup.decode()
     soup = soup.replace("\n", "")
 
-    zmienna = "Thrash Attack Lublin #58"
-    pattern = rf'{zmienna}(.*?)"'
+    concert = "Thrash Attack Lublin #" + str(chceck_source("Poland", "Facebook", None, "Thrash Attack Lublin")[0])
+    print(concert)
+    pattern = rf'{concert}(.*?)"'
 
     match = re.search(pattern, soup)
 
@@ -32,84 +36,39 @@ def from_Thrash_Attack_Lublin():
 
     return ID[:-1]
 
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+def event_Thrash_Attack_Lublin(event_ID):
+    access_token = facebook_api_login()
+    api = facebook.GraphAPI(access_token)
 
-def event_Thrash_Attack_Lublin(event_link):
-    driver = webdriver.Firefox()
-    driver.get(event_link)
-
-    time.sleep(3)
-
-    # Pobierz zawartość strony
-    page_content = driver.page_source
-    #print(page_content)
-
-    # # Poczekaj maksymalnie 10 sekund, aż przycisk pojawi się na stronie
-    # wait = WebDriverWait(driver, 1)
-    # decline_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Decline optional cookies')]")))
-
-    # Znajdź przycisk na stronie
     try:
-        decline_button = driver.find_element(By.XPATH, "//button[contains(text(), 'Decline optional cookies')]")
-        print("próbowałem")
-        # Kliknij przycisk, jeśli jest widoczny i aktywny
-        if decline_button.is_displayed() and decline_button.is_enabled():
-            decline_button.click()
-            print("znaleziono")
-    except:
-        pass
-        print("chuj nie działa")
-
-    # Kliknij przycisk
-    #decline_button.click()
-
-    # Poczekaj kolejne 3 sekundy, aby upewnić się, że strona zdążyła się załadować po kliknięciu
-    time.sleep(3)
-
-    # Pobierz zawartość strony
-    page_content = driver.page_source
-    driver.quit()
-
-    soup = BeautifulSoup(page_content, 'html.parser')
-    soup = soup.decode()
-    print(soup)
-
-event_link = from_Thrash_Attack_Lublin()
-print(event_link)
-# event_Thrash_Attack_Lublin(event_link)
-#url = "https://facebook.com/events/s/thrash-attack-lublin-58/1446993666051348/"
-url = event_link
+        event_data = api.get_object(event_ID, fields='id,name,description,start_time,end_time')
 
 
-### facebook bad
-import facebook
-from logins import facebook_api_login
+        event_info = f"Event ID: {event_data['id']}\n"
+        event_info += f"Event Name: {event_data['name']}\n"
+        event_info += f"Start Time: {event_data['start_time']}\n"
+        desc = f"Description: {event_data['description']}"
 
-access_token = facebook_api_login()
-api = facebook.GraphAPI(access_token)
+        print(event_info)
 
-# Wprowadź tutaj ID lub URL wydarzenia, które chcesz pobrać
-event_id = '1446993666051348'
+        print(desc)
+        parts = desc.split("\n\n")
+        for i in range(1, len(parts)-1):
+            print("="*100)
+            # print(parts[i])
+            # TODO RegEx band name and genre
 
-try:
-    # Pobierz dane wydarzenia
-    event_data = api.get_object(event_id, fields='id,name,description,start_time,end_time')
+        # extracting data about ticket cost
+        data = parts[len(parts)-1].split("\n")
+        ticket_price = data[3][7:]
+        print(ticket_price)
+        # TODO add to database
 
-    # Przetwórz dane wydarzenia i przygotuj tekst do zapisu
-    event_info = f"Event ID: {event_data['id']}\n"
-    event_info += f"Event Name: {event_data['name']}\n"
-    event_info += f"Start Time: {event_data['start_time']}\n"
 
-    # Sprawdź, czy klucz 'end_time' istnieje w danych wydarzenia
-    if 'end_time' in event_data:
-        event_info += f"End Time: {event_data['end_time']}\n"
+    except facebook.GraphAPIError as e:
+        print(f"Wystąpił błąd: {e}")
 
-    if 'description' in event_data:
-        event_info += f"Description: {event_data['description']}\n"
-
-    print(event_info)
-
-except facebook.GraphAPIError as e:
-    print(f"Wystąpił błąd: {e}")
+# event_ID = from_Thrash_Attack_Lublin()
+# print("Event ID = ", event_ID)
+event_ID = "1446993666051348"  # temp
+event_Thrash_Attack_Lublin(event_ID)
