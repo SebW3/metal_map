@@ -38,6 +38,6 @@ def get_genre(band_name):
     if "No matches found. Please try with different search terms." in result:
         return None
 
-    temp = result.split("class")
-    band_genre = temp[2][4:-9]
+    temp = result.split('class=')
+    band_genre = temp[2][3:-9]
     return band_genre
