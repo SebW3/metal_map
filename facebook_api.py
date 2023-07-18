@@ -1,6 +1,6 @@
+import time
 from bs4 import BeautifulSoup
 from selenium import webdriver
-import time
 import re
 import facebook
 from logins import facebook_api_login
@@ -13,7 +13,7 @@ def from_Thrash_Attack_Lublin():  # TODO rebuild this but good enough for now
     driver.get(url)
 
     page_content = driver.page_source
-    time.sleep(3)
+    #time.sleep(3)
     driver.quit()
 
     soup = BeautifulSoup(page_content, 'html.parser')
@@ -68,7 +68,19 @@ def event_Thrash_Attack_Lublin(event_ID):
     except facebook.GraphAPIError as e:
         print(f"Wystąpił błąd: {e}")
 
-# event_ID = from_Thrash_Attack_Lublin()
-# print("Event ID = ", event_ID)
-event_ID = "1446993666051348"  # temp
-event_Thrash_Attack_Lublin(event_ID)
+i = 1
+while True:
+    #event_ID = from_Thrash_Attack_Lublin()
+    event_ID = "1446993666051348"  # temp
+    print("Event ID = ", event_ID)
+    try:
+        int(event_ID)  # check if valid ID
+        #event_ID = "1446993666051348"  # temp
+        event_Thrash_Attack_Lublin(event_ID)
+        break
+    except:
+        print("Not valid event ID")
+        i += 1
+        print(f"Trying for {i} time")
+        if i == 3:
+            break
