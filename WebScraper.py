@@ -28,19 +28,18 @@ class WebScraper:
             soup = BeautifulSoup(response.content, "html.parser")
             concert_element = soup.find_all(class_="gigItemIn")
             concert_element = concert_element[0].get_text().splitlines()
-            print(concert_element)
+            data = []
             for element in concert_element:
-                if len(element) < 1:
+                if element == "" or len(element) <= 2 and not "zł" in element:  # skip non-printable
                     continue
-                print(element.strip())
-            #TODO print it in good way
-
-            pass
+                data.append(element.strip())
+            return data
         elif num_events:
             print(f"downloading {num_events} events")
             pass
         elif ALL:
             print("dowloading all events")
+            pass
         else:
             print("please specify what to scrape")
             pass
@@ -50,8 +49,7 @@ class WebScraper:
 
 
 rockmetal_scraper = WebScraper("rockmetal")
-specific_event_link = "https://www.rockmetal.pl/koncerty.html?koncert=56974_Hostia_Avernal"
-specific_event_data = rockmetal_scraper.scrape_data(specific_event_link)
+specific_event_data = rockmetal_scraper.scrape_data("https://www.rockmetal.pl/koncerty.html?koncert=56719_D_R_I_")
 if specific_event_data:
     print(specific_event_data)
 else:
