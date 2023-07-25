@@ -48,12 +48,21 @@ class WebScraper:
         def f_ALL():
             print("dowloading all events")
             links = []
-            response = requests.get("https://www.rockmetal.pl/koncerty.html?view=1&page=1")
-            soup = BeautifulSoup(response.content, "html.parser")
-            target_links = soup.find_all("a", text="szczegóły")
+            i = 1
+            while True:
+                response = requests.get(f"https://www.rockmetal.pl/koncerty.html?view=1&page={i}")
+                soup = BeautifulSoup(response.content, "html.parser")
+                target_links = soup.find_all("a", text="szczegóły")
 
-            for link in target_links:
-                links.append(link['href'])
+                for link in target_links:
+                    links.append(link['href'])
+                print(len(links), links)
+
+                if soup.find_all(class_="pagerNext pagerFirstLast"):
+                    print("last page reached")
+                    break
+                i += 1
+                break  # working on smaller dataset for now
 
             data_ALL = []
             i = 0
@@ -64,6 +73,8 @@ class WebScraper:
                 i += 1  # temp
                 if i > 3:
                     break
+                print("timer 1 sec")
+                time.sleep(0.1)
 
             return data_ALL
 
@@ -89,3 +100,7 @@ rockmetal_scraper = WebScraper("rockmetal")
 
 scrape_ALL = rockmetal_scraper.scrape_data(ALL=True)
 print(scrape_ALL)
+for concert in scrape_ALL:
+    for info in concert:
+        print(info)
+    print("="*100)
