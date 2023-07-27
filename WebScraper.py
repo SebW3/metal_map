@@ -2,11 +2,11 @@
 import time
 import requests
 from bs4 import BeautifulSoup
-from selenium import webdriver
-import re
-import facebook
-from logins import facebook_api_login
-from database import chceck_source
+# from selenium import webdriver
+# import re
+# import facebook
+# from logins import facebook_api_login
+# from database import chceck_source
 
 class WebScraper:
     concerts = []
@@ -28,19 +28,73 @@ class WebScraper:
             print("downloading specific event data")
             response = requests.get(specific_event_link)
             soup = BeautifulSoup(response.content, "html.parser")
-            concert_element = soup.find_all(class_="gigItemIn")
+            concert_element = soup.find_all(class_="gigItemIn")  # TODO THERE CAN BE 2 "gigItemIn"
             concert_element = concert_element[0].get_text().splitlines()
+
+            data = []
             title = soup.find_all(class_="gigItemTitle")
             if title:
-                data = [str(title[0])[25:-5]]
+                title = str(title[0])[25:-5]
             else:
-                data = [None]
+                title = None
+            bands_playing = []
+            where = [None, None, None]  # place, club, address
+            price = None
+            added_date = None
 
             for element in concert_element:
                 if element == "" or len(element) <= 2 and not "zł" in element:  # skip non-printable
                     continue
                 data.append(element.strip())
-            return data
+
+            # reordering data
+            j = 0
+
+            # ordering data
+            for i in range(1, len(data)):
+                j += 1
+                if ":" in data[i]:
+                    break
+                bands_playing.append(data[i])
+
+
+            j += 1
+            when = data[j]
+            j += 2
+
+            where[0] = data[j]
+            where[1] = data[j+1]
+            if ":" in data[j+2]:
+                where[2] = None
+                j += 3
+            else:
+                where[2] = data[j+2]
+                j += 4
+
+            if "Cena:" in data:
+                price = data[j]
+            else:
+                price = None
+
+            if ":" in data[len(data)-1]:
+                added_date = data[len(data)-1]
+            else:
+                added_date = None
+
+
+            for i in range(j, len(data)):
+                j += 1
+                if ":" in data[i]:
+                    break
+
+
+            print("+"*100)
+            print(data)
+            print([title, bands_playing, when, where, price, added_date])
+
+
+            return [title, bands_playing, when, where, price, added_date]
+
         def f_num_events(num_events):
             print(f"downloading {num_events} events")
             pass
@@ -99,8 +153,8 @@ rockmetal_scraper = WebScraper("rockmetal")
 #print(specific_event_data)
 
 scrape_ALL = rockmetal_scraper.scrape_data(ALL=True)
-print(scrape_ALL)
-for concert in scrape_ALL:
-    for info in concert:
-        print(info)
-    print("="*100)
+#print(scrape_ALL)
+# for concert in scrape_ALL:
+#     for info in concert:
+#         print(info)
+#     print("="*100)
