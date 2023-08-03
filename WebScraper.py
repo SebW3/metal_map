@@ -28,72 +28,70 @@ class WebScraper:
             print("downloading specific event data")
             response = requests.get(specific_event_link)
             soup = BeautifulSoup(response.content, "html.parser")
-            concert_element = soup.find_all(class_="gigItemIn")  # TODO THERE CAN BE 2 "gigItemIn"
-            try:  # TODO
-                test = concert_element[1].get_text().splitlines()
-                print("&"*200)
-                print(test)
-                print("&" * 200)
-            except:
-                pass
-            concert_element = concert_element[0].get_text().splitlines()
+            concert_element = soup.find_all(class_="gigItemIn")
 
-
-            data = []
-            title = soup.find_all(class_="gigItemTitle")
-            if title:
-                title = str(title[0])[25:-5]
-            else:
-                title = None
-            bands_playing = []
-            where = [None, None, None]  # place, club, address
-            price = None
-            added_date = None
-            change_date = None
-            when = None
-            uwagi = None
-
+            concerts = []
             for element in concert_element:
-                if element == "" or len(element) <= 2 and not "zł" in element:  # skip non-printable
-                    continue
-                data.append(element.strip())
+                concert_element = element.get_text().splitlines()
 
-            for i in range(len(data)):
-                if data[i] == "Wystąpi:":
-                    bands_playing.append(data[i+1])
-                elif data[i] == "Wystąpią:":
-                    j = 1
-                    while ":" not in data[i+j]:
-                        bands_playing.append(data[i+j])
-                        j += 1
-                elif data[i] == "Kiedy:":
-                    when = data[i+1]
-                elif data[i] == "Gdzie:":
-                    for j in range(len(where)):
-                        if ":" in data[i+j+1]:
-                            break
-                        where[j] = data[i+j+1]
-                elif data[i] == "Cena:":
-                    price = data[i+1]
-                elif "Dodane:" in data[i]:
-                    if "zmiana" in data[i]:
-                        added_date = data[i].split(",")[0]
-                        change_date = data[i].split(",")[1].strip()
-                    else:
-                        added_date = data[i]
-                elif data[i] == "Uwagi:":
-                    uwagi = data[i+1]
+                data = []
+                title = soup.find_all(class_="gigItemTitle")
+                if title:
+                    title = str(title[0])[25:-5]
+                else:
+                    title = None
+                bands_playing = []
+                where = [None, None, None]  # place, club, address
+                price = None
+                added_date = None
+                change_date = None
+                when = None
+                uwagi = None
+
+                for element in concert_element:
+                    if element == "" or len(element) <= 2 and not "zł" in element:  # skip non-printable
+                        continue
+                    data.append(element.strip())
+
+                for i in range(len(data)):
+                    if data[i] == "Wystąpi:":
+                        bands_playing.append(data[i+1])
+                    elif data[i] == "Wystąpią:":
+                        j = 1
+                        while ":" not in data[i+j]:
+                            bands_playing.append(data[i+j])
+                            j += 1
+                    elif data[i] == "Kiedy:":
+                        when = data[i+1]
+                    elif data[i] == "Gdzie:":
+                        for j in range(len(where)):
+                            if ":" in data[i+j+1]:
+                                break
+                            where[j] = data[i+j+1]
+                    elif data[i] == "Cena:":
+                        price = data[i+1]
+                    elif "Dodane:" in data[i]:
+                        if "zmiana" in data[i]:
+                            added_date = data[i].split(",")[0]
+                            change_date = data[i].split(",")[1].strip()
+                        else:
+                            added_date = data[i]
+                    elif data[i] == "Uwagi:":
+                        uwagi = data[i+1]
 
 
-            if "(www)" in bands_playing:
-                bands_playing.remove("(www)")
+                if "(www)" in bands_playing:
+                    bands_playing.remove("(www)")
 
-            print("+"*100)
-            print(data)
-            print([title, bands_playing, when, where, price, added_date, change_date, uwagi])
+                print("+"*100)
+                #print(data)
+                print([title, bands_playing, when, where, price, added_date, change_date, uwagi])
 
+                if len(concert_element) == 1:
+                    return [title, bands_playing, when, where, price, added_date, change_date, uwagi]
+                concerts.append([title, bands_playing, when, where, price, added_date, change_date, uwagi])
 
-            return [title, bands_playing, when, where, price, added_date, change_date, uwagi]
+            return concerts
 
         def f_num_events(num_events):
             print(f"downloading {num_events} events")
@@ -155,7 +153,8 @@ rockmetal_scraper = WebScraper("rockmetal")
 scrape_ALL = rockmetal_scraper.scrape_data(ALL=True)
 print("|"*100)
 print(scrape_ALL)
-# for concert in scrape_ALL:
-#     for info in concert:
-#         print(info)
-#     print("="*100)
+for concert in scrape_ALL:
+    print(concert)
+    # for info in concert:
+    #     print(info)
+    print("="*100)
