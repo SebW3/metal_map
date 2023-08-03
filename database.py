@@ -72,3 +72,28 @@ def chceck_source(country, site, page, name):  # TODO think of something better
         temp = cursor.fetchone()
         close_db_connection(connection, cursor)
         return temp
+
+def add_concert_to_database(concerts):
+    if len(concerts) > 1:
+        print("adding festival info")  #TODO add function for that
+    else:
+        concert = concerts[0]
+        bands_playing = ""
+        for band in concert[1]:
+            bands_playing += band + ", "
+
+        localization = ""
+        try:
+            for localizatio in concert[3]:
+                localization += localizatio + ", "
+        except:
+            pass
+        print("adding concert info to database")
+
+        connection, cursor = connect_to_db()
+        cursor.execute(
+            "INSERT INTO concerts_poland (name, concert_size, bands_playing, concert_date, localization, ticket_price, added_date, change_date, additional_info) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
+            (concert[0], "medium", bands_playing[:-2], concert[2], localization[:-2], concert[4], concert[5], concert[6], concert[7]))
+
+        connection.commit()
+        close_db_connection(connection, cursor)

@@ -1,27 +1,20 @@
 # temporary code here
-# import WebScraper
-from bs4 import BeautifulSoup
-import requests
-from selenium import webdriver
-import time
-
-url = "https://winiarybookings.pl/wydarzenia"
-response = requests.get(url)
-soup = BeautifulSoup(response.content, "html.parser")
-print(soup)
-
-print("==="*100)
+from WebScraper import WebScraper
+import database
 
 
+# Testing here
+rockmetal_scraper = WebScraper("rockmetal")
+specific_event_data = rockmetal_scraper.scrape_data("https://www.rockmetal.pl/koncerty.html?koncert=56347_Wardruna_Percival")
+print("concert data: ", specific_event_data)
+#
+# scrape_ALL = rockmetal_scraper.scrape_data(ALL=True)
+# print("|"*100)
+# print(scrape_ALL)
+# for concert in scrape_ALL:
+#     print(concert)
+#     # for info in concert:
+#     #     print(info)
+#     print("="*100)
 
-driver = webdriver.Firefox()
-driver.get(url)
-
-page_content = driver.page_source
-time.sleep(3)
-driver.quit()
-
-soup = BeautifulSoup(page_content, 'html.parser')
-soup = soup.decode()
-#soup = soup.replace("\n", "")
-print(soup)
+database.add_concert_to_database(specific_event_data)
