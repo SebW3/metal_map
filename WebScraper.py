@@ -1,4 +1,3 @@
-# I'm going to refactor all webscraping code to classess for more readibility and easier use
 import time
 import requests
 from bs4 import BeautifulSoup
@@ -72,10 +71,10 @@ class WebScraper:
                         price = data[i+1]
                     elif "Dodane:" in data[i]:
                         if "zmiana" in data[i]:
-                            added_date = data[i].split(",")[0]
-                            change_date = data[i].split(",")[1].strip()
+                            added_date = data[i].split(",")[0][8:]
+                            change_date = data[i].split(",")[1].strip()[8:]
                         else:
-                            added_date = data[i]
+                            added_date = data[i][8:]
                     elif data[i] == "Uwagi:":
                         uwagi = data[i+1]
 
@@ -145,16 +144,16 @@ class WebScraper:
 
 
 # Testing here
-rockmetal_scraper = WebScraper("rockmetal")
-#specific_event_data = rockmetal_scraper.scrape_data("https://www.rockmetal.pl/koncerty.html?koncert=56719_D_R_I_")
-#specific_event_data = rockmetal_scraper.scrape_data("https://www.rockmetal.pl/koncerty.html?koncert=56842_Summer_Discomfort")
-#print(specific_event_data)
-
-scrape_ALL = rockmetal_scraper.scrape_data(ALL=True)
-print("|"*100)
-print(scrape_ALL)
-for concert in scrape_ALL:
-    print(concert)
-    # for info in concert:
-    #     print(info)
-    print("="*100)
+# rockmetal_scraper = WebScraper("rockmetal")
+# #specific_event_data = rockmetal_scraper.scrape_data("https://www.rockmetal.pl/koncerty.html?koncert=56719_D_R_I_")
+# #specific_event_data = rockmetal_scraper.scrape_data("https://www.rockmetal.pl/koncerty.html?koncert=56842_Summer_Discomfort")
+# #print(specific_event_data)
+#
+# scrape_ALL = rockmetal_scraper.scrape_data(ALL=True)
+# print("|"*100)
+# print(scrape_ALL)
+# for concert in scrape_ALL:
+#     print(concert)
+#     # for info in concert:
+#     #     print(info)
+#     print("="*100)
