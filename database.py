@@ -73,9 +73,40 @@ def chceck_source(country, site, page, name):  # TODO think of something better
         close_db_connection(connection, cursor)
         return temp
 
-def add_concert_to_database(concerts):
+def add_concert_to_database(concerts):  # TODO add checking if already exists
     if len(concerts) > 1:
-        print("adding festival info")  #TODO add function for that
+        print("adding festival info")
+        connection, cursor = connect_to_db()
+        cursor.execute("SELECT festival_id FROM festivals ORDER BY festival_id DESC LIMIT 1")
+        latest_id = cursor.fetchone()[0] + 1
+        print(latest_id, type(latest_id))
+        for concert in concerts:
+            print("_"*100)
+            print(concert)
+
+            bands_playing = ""
+            for band in concert[1]:
+                bands_playing += band + ", "
+
+            localization = ""
+            try:
+                for localizatio in concert[3]:
+                    localization += localizatio + ", "
+            except:
+                pass
+            print("adding concert info to database")
+
+
+            cursor.execute(
+                "INSERT INTO festivals (festival_id, title, bands_playing, concert_date, localization, ticket_price, added_date, change_date, additional_info) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                (latest_id, concert[0], bands_playing[:-2], concert[2], localization[:-2], concert[4], concert[5],
+                 concert[6], concert[7]))
+
+        print("&"*100)
+        cursor.execute("INSERT INTO concerts_poland (festival_id, name, concert_size, concert_date, localization, ticket_price, added_date, change_date) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+                       (latest_id, concert[0], "festival", concert[2], localization[:-2], concert[4], concert[5], concert[6]))
+        connection.commit()
+        close_db_connection(connection, cursor)
     else:
         concert = concerts[0]
         bands_playing = ""
