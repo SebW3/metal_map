@@ -54,8 +54,9 @@ class WebScraper:
 
                 for i in range(len(data)):
                     if data[i] == "Wystąpi:":
-                        bands_playing.append(data[i+1])
-                    elif data[i] == "Wystąpią:":
+                        if ":" not in data[i+1]:
+                            bands_playing.append(data[i+1])
+                    elif data[i] == "Wystąpią:" or data[i] == "Wystąpili:":
                         j = 1
                         while ":" not in data[i+j]:
                             bands_playing.append(data[i+j])
