@@ -64,7 +64,7 @@ class WebScraper:
                     elif data[i] == "Kiedy:":
                         when = data[i+1]
                     elif data[i] == "Gdzie:":
-                        for j in range(len(where)):
+                        for j in range(len(where)-1):
                             if ":" in data[i+j+1]:
                                 break
                             where[j] = data[i+j+1]
@@ -94,11 +94,13 @@ class WebScraper:
             return concerts
 
         def f_num_events(num_events):
-            print(f"downloading {num_events} events")
-            pass
+            return f_ALL(num_events)
 
-        def f_ALL():
-            print("dowloading all events")
+        def f_ALL(num_events=None):
+            if num_events:
+                print(f"downloading {num_events} events")
+            else:
+                print("dowloading all events")
             links = []
             i = 1
             while True:
@@ -114,6 +116,10 @@ class WebScraper:
                     print("last page reached")
                     break
                 i += 1
+
+                if num_events:
+                    if len(links) <= num_events:
+                        break
                 break  # working on smaller dataset for now
 
             data_ALL = []
@@ -125,8 +131,15 @@ class WebScraper:
                 i += 1  # temp
                 if i > 3:
                     break
+
+                if num_events:
+                    if i >= num_events:
+                        print(f"downloaded {num_events} events")
+                        break
+
+
                 print("timer 1 sec")
-                time.sleep(0.1)
+                time.sleep(1)
 
             return data_ALL
 
@@ -142,19 +155,3 @@ class WebScraper:
 
     def scrape_facebook_data(self):
         pass
-
-
-# Testing here
-# rockmetal_scraper = WebScraper("rockmetal")
-# #specific_event_data = rockmetal_scraper.scrape_data("https://www.rockmetal.pl/koncerty.html?koncert=56719_D_R_I_")
-# #specific_event_data = rockmetal_scraper.scrape_data("https://www.rockmetal.pl/koncerty.html?koncert=56842_Summer_Discomfort")
-# #print(specific_event_data)
-#
-# scrape_ALL = rockmetal_scraper.scrape_data(ALL=True)
-# print("|"*100)
-# print(scrape_ALL)
-# for concert in scrape_ALL:
-#     print(concert)
-#     # for info in concert:
-#     #     print(info)
-#     print("="*100)
