@@ -73,6 +73,53 @@ def chceck_source(country, site, page, name):  # TODO think of something better
         close_db_connection(connection, cursor)
         return temp
 
+def check_if_already_exist(concert_number=None, concert_name=None, change_date=None):
+    # returns None if no entry
+    # returns 1 if already exists with latest update
+    # returns 2 if already exists without latest update
+    connection, cursor = connect_to_db()
+
+    # check by concert_name
+    if concert_name:  # TODO potential bug if same concert repeats
+        cursor.execute(f"SELECT concert_name FROM concerts_poland WHERE concert_name = {concert_name}")
+        concert_name_db = cursor.fetchone()[0]
+        if concert_name == concert_name_db:
+            cursor.execute(f"SELECT change_date FROM concerts_poland WHERE concert_name = {concert_name}")
+            change_date_db = cursor.fetchone()
+            close_db_connection(connection, cursor)
+            if change_date_db == change_date or change_date_db == None:
+                print("newest info in database")
+                return 1
+            else:
+                print("concert info update required")
+                return 2
+        else:
+            print(f"no {concert_name} in database")
+            close_db_connection(connection, cursor)
+            return None
+
+    # check by concert_number
+    cursor.execute(f"SELECT concert_number FROM concerts_poland WHERE concert_number = {concert_number}")
+    concert_number_db = cursor.fetchone()[0]
+    print(concert_number_db)
+    if concert_number == concert_number_db:
+        cursor.execute(f"SELECT change_date FROM concerts_poland WHERE concert_number = {concert_number}")
+        change_date_db = cursor.fetchone()[0]
+        close_db_connection(connection, cursor)
+        if change_date_db == change_date or change_date_db == None:
+            print("newest info in database")
+            return 1
+        else:
+            print("concert info update required")
+            print(f"input date {change_date}, in database {change_date_db}")
+            return 2
+    else:
+        print(f"no concert with concert_number {concert_number} in database")
+        close_db_connection(connection, cursor)
+        return None
+
+#check_if_already_exist(56774, change_date="1.06.2023")
+
 def add_concert_to_database(concerts):  # TODO add checking if already exists
     if len(concerts) > 1:
         print("adding festival info")
@@ -110,12 +157,12 @@ def add_concert_to_database(concerts):  # TODO add checking if already exists
     else:
         concert = concerts[0]
         bands_playing = ""
-        for band in concert[1]:
+        for band in concert[2]:
             bands_playing += band + ", "
 
         localization = ""
         try:
-            for localizatio in concert[3]:
+            for localizatio in concert[4]:
                 localization += localizatio + ", "
         except:
             pass
@@ -123,8 +170,8 @@ def add_concert_to_database(concerts):  # TODO add checking if already exists
 
         connection, cursor = connect_to_db()
         cursor.execute(
-            "INSERT INTO concerts_poland (name, concert_size, bands_playing, concert_date, localization, ticket_price, added_date, change_date, additional_info) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
-            (concert[0], "medium", bands_playing[:-2], concert[2], localization[:-2], concert[4], concert[5], concert[6], concert[7]))
+            "INSERT INTO concerts_poland (concert_number, name, concert_size, bands_playing, concert_date, localization, ticket_price, added_date, change_date, additional_info) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+            (concert[0], concert[1], "medium", bands_playing[:-2], concert[3], localization[:-2], concert[5], concert[6], concert[7], concert[8]))
 
         connection.commit()
         close_db_connection(connection, cursor)

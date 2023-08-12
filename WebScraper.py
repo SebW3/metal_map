@@ -26,6 +26,9 @@ class WebScraper:
         def f_specific_event_link(specific_event_link):
             print("downloading specific event data")
             response = requests.get(specific_event_link)
+
+            concert_number = (specific_event_link).split("koncert=")[1][:5]
+            print(concert_number)
             soup = BeautifulSoup(response.content, "html.parser")
             concert_element = soup.find_all(class_="gigItemIn")
 
@@ -85,11 +88,11 @@ class WebScraper:
 
                 print("+"*100)
                 #print(data)
-                print([title, bands_playing, when, where, price, added_date, change_date, uwagi])
+                print([concert_number, title, bands_playing, when, where, price, added_date, change_date, uwagi])
 
                 if len(concert_element) == 1:
-                    return [title, bands_playing, when, where, price, added_date, change_date, uwagi]
-                concerts.append([title, bands_playing, when, where, price, added_date, change_date, uwagi])
+                    return [concert_number, title, bands_playing, when, where, price, added_date, change_date, uwagi]
+                concerts.append([concert_number, title, bands_playing, when, where, price, added_date, change_date, uwagi])
 
             return concerts
 
