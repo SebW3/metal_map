@@ -100,11 +100,17 @@ def check_if_already_exist(concert_number=None, concert_name=None, change_date=N
 
     # check by concert_number
     cursor.execute(f"SELECT concert_number FROM concerts_poland WHERE concert_number = {concert_number}")
-    concert_number_db = cursor.fetchone()[0]
-    print(concert_number_db)
+    concert_number_db = cursor.fetchone()
+    if concert_number_db:
+        concert_number_db = concert_number_db[0]
+    #print(concert_number_db, "number in database")
+
     if concert_number == concert_number_db:
         cursor.execute(f"SELECT change_date FROM concerts_poland WHERE concert_number = {concert_number}")
-        change_date_db = cursor.fetchone()[0]
+        change_date_db = cursor.fetchone()
+        if change_date_db:
+            change_date_db = change_date_db[0]
+
         close_db_connection(connection, cursor)
         if change_date_db == change_date or change_date_db == None:
             print("newest info in database")
@@ -156,22 +162,33 @@ def add_concert_to_database(concerts):  # TODO add checking if already exists
         close_db_connection(connection, cursor)
     else:
         concert = concerts[0]
-        bands_playing = ""
-        for band in concert[2]:
-            bands_playing += band + ", "
+        check = check_if_already_exist(concert_number=concert[0], concert_name=concert[1], change_date=concert[7])
+        if check == 1:  # newest info = no action needed
+            return None
+        else:  # adding / updating concert info
+            bands_playing = ""
+            for band in concert[2]:
+                bands_playing += band + ", "
 
-        localization = ""
-        try:
-            for localizatio in concert[4]:
-                localization += localizatio + ", "
-        except:
-            pass
-        print("adding concert info to database")
+            localization = ""
+            try:
+                for localizatio in concert[4]:
+                    localization += localizatio + ", "
+            except:
+                pass
+            print("adding concert info to database")
 
-        connection, cursor = connect_to_db()
-        cursor.execute(
-            "INSERT INTO concerts_poland (concert_number, name, concert_size, bands_playing, concert_date, localization, ticket_price, added_date, change_date, additional_info) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
-            (concert[0], concert[1], "medium", bands_playing[:-2], concert[3], localization[:-2], concert[5], concert[6], concert[7], concert[8]))
-
-        connection.commit()
-        close_db_connection(connection, cursor)
+            connection, cursor = connect_to_db()
+            if check == 2:
+                cursor.execute(
+                    "UPDATE concerts_poland SET name = %s, concert_size = %s, bands_playing = %s, concert_date = %s, localization = %s, ticket_price = %s, added_date = %s, change_date = %s, additional_info = %s WHERE concert_number = %s",
+                    (concert[1], "medium", bands_playing[:-2], concert[3], localization[:-2], concert[5], concert[6],
+                     concert[7], concert[8], concert[0]))
+                print("concert info updated")
+            else:
+                cursor.execute(
+                    "INSERT INTO concerts_poland (concert_number, name, concert_size, bands_playing, concert_date, localization, ticket_price, added_date, change_date, additional_info) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                    (concert[0], concert[1], "medium", bands_playing[:-2], concert[3], localization[:-2], concert[5], concert[6], concert[7], concert[8]))
+                print("concert added")
+            connection.commit()
+            close_db_connection(connection, cursor)

@@ -27,7 +27,7 @@ class WebScraper:
             print("downloading specific event data")
             response = requests.get(specific_event_link)
 
-            concert_number = (specific_event_link).split("koncert=")[1][:5]
+            concert_number = int((specific_event_link).split("koncert=")[1][:5])  # TODO maybe change in future to str
             print(concert_number)
             soup = BeautifulSoup(response.content, "html.parser")
             concert_element = soup.find_all(class_="gigItemIn")
