@@ -31,10 +31,9 @@ class WebScraper:
             print(concert_number)
             soup = BeautifulSoup(response.content, "html.parser")
             concert_element = soup.find_all(class_="gigItemIn")
-
             concerts = []
-            for element in concert_element:
-                concert_element = element.get_text().splitlines()
+            for element in concert_element:  # multiple plays in one event
+                concert_element_text = element.get_text().splitlines()
 
                 data = []
                 title = soup.find_all(class_="gigItemTitle")
@@ -50,7 +49,7 @@ class WebScraper:
                 when = None
                 uwagi = None
 
-                for element in concert_element:
+                for element in concert_element_text:
                     if element == "" or len(element) <= 2 and not "zł" in element:  # skip non-printable
                         continue
                     data.append(element.strip())
@@ -90,11 +89,12 @@ class WebScraper:
                 #print(data)
                 print([concert_number, title, bands_playing, when, where, price, added_date, change_date, uwagi])
 
-                if len(concert_element) == 1:
+                if len(concert_element) == 1:  # if NOT festival return info, otherwise continue appending data
+                    print("HELLOOOO " * 100)
                     return [concert_number, title, bands_playing, when, where, price, added_date, change_date, uwagi]
                 concerts.append([concert_number, title, bands_playing, when, where, price, added_date, change_date, uwagi])
 
-            return concerts
+            return [concerts]
 
         def f_num_events(num_events):
             return f_ALL(num_events)
@@ -129,7 +129,7 @@ class WebScraper:
             i = 0
             for link in links:
                 print(link)
-                data_ALL.append(f_specific_event_link(link))
+                data_ALL.append([f_specific_event_link(link)])
 
                 i += 1  # temp
                 if i > 3:

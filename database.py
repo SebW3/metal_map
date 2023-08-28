@@ -81,12 +81,18 @@ def check_if_already_exist(concert_number=None, concert_name=None, change_date=N
 
     # check by concert_name
     if concert_name:  # TODO potential bug if same concert repeats
-        cursor.execute(f"SELECT concert_name FROM concerts_poland WHERE concert_name = {concert_name}")
-        concert_name_db = cursor.fetchone()[0]
+        cursor.execute("SELECT name FROM concerts_poland WHERE name = %s", (concert_name,))
+
+        concert_name_db = cursor.fetchone()
+        if concert_name_db:
+            concert_name_db = concert_name_db[0]
         if concert_name == concert_name_db:
-            cursor.execute(f"SELECT change_date FROM concerts_poland WHERE concert_name = {concert_name}")
+            cursor.execute(f"SELECT change_date FROM concerts_poland WHERE name = %s", (concert_name,))
             change_date_db = cursor.fetchone()
             close_db_connection(connection, cursor)
+            if change_date_db:
+                change_date_db = change_date_db[0]
+
             if change_date_db == change_date or change_date_db == None:
                 print("newest info in database")
                 return 1
@@ -124,42 +130,47 @@ def check_if_already_exist(concert_number=None, concert_name=None, change_date=N
         close_db_connection(connection, cursor)
         return None
 
-#check_if_already_exist(56774, change_date="1.06.2023")
-
 def add_concert_to_database(concerts):  # TODO add checking if already exists
     if len(concerts) > 1:
         print("adding festival info")
         connection, cursor = connect_to_db()
-        cursor.execute("SELECT festival_id FROM festivals ORDER BY festival_id DESC LIMIT 1")
-        latest_id = cursor.fetchone()[0] + 1
-        print(latest_id, type(latest_id))
-        for concert in concerts:
-            print("_"*100)
-            print(concert)
 
-            bands_playing = ""
-            for band in concert[1]:
-                bands_playing += band + ", "
+        check = check_if_already_exist(concert_name=concerts[0][1], concert_number=concerts[0][0])
 
-            localization = ""
-            try:
-                for localizatio in concert[3]:
-                    localization += localizatio + ", "
-            except:
-                pass
-            print("adding concert info to database")
+        if check:
+            print("TODO") # TODO
+        else:
+            cursor.execute("SELECT festival_id FROM festivals ORDER BY festival_id DESC LIMIT 1")
+            latest_id = cursor.fetchone()[0] + 1
+            print(latest_id, type(latest_id))
+            for concert in concerts:
+                print("_"*100)
+                print(concert)
 
+                bands_playing = ""
+                for band in concert[2]:
+                    bands_playing += band + ", "
 
-            cursor.execute(
-                "INSERT INTO festivals (festival_id, title, bands_playing, concert_date, localization, ticket_price, added_date, change_date, additional_info) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
-                (latest_id, concert[0], bands_playing[:-2], concert[2], localization[:-2], concert[4], concert[5],
-                 concert[6], concert[7]))
+                localization = ""
+                try:
+                    for localizatio in concert[4]:
+                        localization += localizatio + ", "
+                except:
+                    pass
+                print("adding concert info to database")
 
-        print("&"*100)
-        cursor.execute("INSERT INTO concerts_poland (festival_id, name, concert_size, concert_date, localization, ticket_price, added_date, change_date) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
-                       (latest_id, concert[0], "festival", concert[2], localization[:-2], concert[4], concert[5], concert[6]))
-        connection.commit()
-        close_db_connection(connection, cursor)
+                print((latest_id, concert[1], bands_playing[:-2], concert[3], localization[:-2], concert[5], concert[6], concert[7], concert[8]))
+
+                cursor.execute(
+                    "INSERT INTO festivals (festival_id, title, bands_playing, concert_date, localization, ticket_price, added_date, change_date, additional_info) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                    (latest_id, concert[1], bands_playing[:-2], concert[3], localization[:-2], concert[5], concert[6],
+                     concert[7], concert[8]))
+
+            print("&"*100)
+            cursor.execute("INSERT INTO concerts_poland (festival_id, name, concert_size, concert_date, localization, ticket_price, added_date, change_date) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+                           (latest_id, concert[1], "festival", concert[3], localization[:-2], concert[5], concert[6], concert[7]))
+            connection.commit()
+            close_db_connection(connection, cursor)
     else:
         concert = concerts[0]
         check = check_if_already_exist(concert_number=concert[0], concert_name=concert[1], change_date=concert[7])
