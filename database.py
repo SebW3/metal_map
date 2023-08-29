@@ -131,18 +131,20 @@ def check_if_already_exist(concert_number=None, concert_name=None, change_date=N
         return None
 
 def add_concert_to_database(concerts):  # TODO add checking if already exists
-    if len(concerts) > 1:
+    if len(concerts) > 1:  # festival
         print("adding festival info")
         connection, cursor = connect_to_db()
 
         check = check_if_already_exist(concert_name=concerts[0][1], concert_number=concerts[0][0])
 
-        if check:
-            print("TODO") # TODO
-        else:
-            cursor.execute("SELECT festival_id FROM festivals ORDER BY festival_id DESC LIMIT 1")
-            latest_id = cursor.fetchone()[0] + 1
-            print(latest_id, type(latest_id))
+        if check == 1:
+            return 0
+        elif check == 2:
+            connection, cursor = connect_to_db()
+            cursor.execute("SELECT festival_id FROM concerts_poland WHERE name = %s", (concerts[0][1],))  # TODO error if same name
+            festival_id = cursor.fetchone()[0]
+            cursor.execute("DELETE FROM festivals WHERE festival_id = %s", (festival_id,))
+            connection.commit()
             for concert in concerts:
                 print("_"*100)
                 print(concert)
@@ -159,7 +161,32 @@ def add_concert_to_database(concerts):  # TODO add checking if already exists
                     pass
                 print("adding concert info to database")
 
-                print((latest_id, concert[1], bands_playing[:-2], concert[3], localization[:-2], concert[5], concert[6], concert[7], concert[8]))
+                cursor.execute(
+                    "INSERT INTO festivals (festival_id, title, bands_playing, concert_date, localization, ticket_price, added_date, change_date, additional_info) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                    (festival_id, concert[1], bands_playing[:-2], concert[3], localization[:-2], concert[5],
+                     concert[6],
+                     concert[7], concert[8]))
+            connection.commit()
+            close_db_connection(connection, cursor)
+
+        else:
+            cursor.execute("SELECT festival_id FROM festivals ORDER BY festival_id DESC LIMIT 1")
+            latest_id = cursor.fetchone()[0] + 1
+            for concert in concerts:
+                print("_"*100)
+                print(concert)
+
+                bands_playing = ""
+                for band in concert[2]:
+                    bands_playing += band + ", "
+
+                localization = ""
+                try:
+                    for localizatio in concert[4]:
+                        localization += localizatio + ", "
+                except:
+                    pass
+                print("adding concert info to database")
 
                 cursor.execute(
                     "INSERT INTO festivals (festival_id, title, bands_playing, concert_date, localization, ticket_price, added_date, change_date, additional_info) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
@@ -167,11 +194,11 @@ def add_concert_to_database(concerts):  # TODO add checking if already exists
                      concert[7], concert[8]))
 
             print("&"*100)
-            cursor.execute("INSERT INTO concerts_poland (festival_id, name, concert_size, concert_date, localization, ticket_price, added_date, change_date) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
-                           (latest_id, concert[1], "festival", concert[3], localization[:-2], concert[5], concert[6], concert[7]))
+            cursor.execute("INSERT INTO concerts_poland (concert_number, festival_id, name, concert_size, concert_date, localization, ticket_price, added_date, change_date) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                           (concert[0], latest_id, concert[1], "festival", concert[3], localization[:-2], concert[5], concert[6], concert[7]))
             connection.commit()
             close_db_connection(connection, cursor)
-    else:
+    else:  # normal concert
         concert = concerts[0]
         check = check_if_already_exist(concert_number=concert[0], concert_name=concert[1], change_date=concert[7])
         if check == 1:  # newest info = no action needed
