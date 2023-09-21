@@ -12,11 +12,18 @@ class WebScraper:
     def __init__(self, url):
         self.url = url
 
+    def openAI(self, description=None):
+        # analise description for concert info
+        # TODO
+        print("TODO")
+
     def scrape_data(self, specific_event_link=None, num_events=None, ALL=None):
         if "facebook" in self.url:
             return self.scrape_facebook_data()
         elif "rockmetal" in self.url:
             return self.scrape_rockmetal_data(specific_event_link, num_events, ALL)
+        elif "biletomat" in self.url:
+            return self.scrape_biletomat_data(specific_event_link, num_events, ALL)
         else:
             print("unknown website")
             return None
@@ -158,3 +165,42 @@ class WebScraper:
 
     def scrape_facebook_data(self):
         pass
+
+    def scrape_biletomat_data(self, specific_event_link=None, num_events=None, ALL=None):  # this one will use openAI to analyse text
+        def f_specific_event_link(specific_event_link):
+            print("downloading specific event data")
+            response = requests.get(specific_event_link)
+            soup = BeautifulSoup(response.content, "html.parser")
+            header = soup.find(class_="product-header")
+
+            print(header.get_text())
+            print(repr(header.get_text()))
+            concert_info = header.get_text().replace("\n\n\n", "").replace("  ", "")
+
+            concert_info = concert_info.splitlines()
+
+            for item in concert_info:  # remove whitespaces
+                if len(item) < 2:
+                    concert_info.remove(item)
+
+            print(concert_info)
+            title = concert_info[2]
+            date = concert_info[3] + concert_info[4]  # TODO one format
+            localization = [concert_info[5], concert_info[6] + concert_info[8]]
+
+            description = soup.find_all(class_="description-block__text-block")[1].get_text()
+            temp = self.openAI(description=description)  # TODO
+            print(description)
+
+            return 0  # TODO!
+
+        if specific_event_link:
+            return f_specific_event_link(specific_event_link)
+        # TODO
+        # elif num_events:
+        #    return f_num_events(num_events)
+        # elif ALL:
+        #     return f_ALL()
+        else:
+            print("please specify what to scrape")
+            pass
