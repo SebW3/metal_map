@@ -1,8 +1,9 @@
 import time
 import requests
 from bs4 import BeautifulSoup
+import re
+import openAI
 # from selenium import webdriver
-# import re
 # import facebook
 # from logins import facebook_api_login
 # from database import chceck_source
@@ -14,6 +15,7 @@ class WebScraper:
 
     def openAI(self, description=None):
         # analise description for concert info
+
         # TODO
         print("TODO")
 
@@ -173,8 +175,6 @@ class WebScraper:
             soup = BeautifulSoup(response.content, "html.parser")
             header = soup.find(class_="product-header")
 
-            print(header.get_text())
-            print(repr(header.get_text()))
             concert_info = header.get_text().replace("\n\n\n", "").replace("  ", "")
 
             concert_info = concert_info.splitlines()
@@ -183,24 +183,53 @@ class WebScraper:
                 if len(item) < 2:
                     concert_info.remove(item)
 
-            print(concert_info)
             title = concert_info[2]
             date = concert_info[3] + concert_info[4]  # TODO one format
             localization = [concert_info[5], concert_info[6] + concert_info[8]]
 
-            description = soup.find_all(class_="description-block__text-block")[1].get_text()
+            description = soup.find_all(class_="description-block__text-block")[1].get_text().strip()
             temp = self.openAI(description=description)  # TODO
-            print(description)
+            #print(description)
+            bands_playing = None
 
-            return 0  # TODO!
+            # TODO ticket_price, short_description
+            ticket_price = None
+            short_description = None
+
+
+            return [title, bands_playing, date, localization, ticket_price, short_description]  # TODO!
+
+
+        def f_ALL(num_events=None):
+            response = requests.get("https://www.biletomat.pl/metal/")
+            soup = BeautifulSoup(response.content, "html.parser")
+            links = soup.find_all(class_="event-teaser__link")
+
+            for i in range(len(links)):
+                temp = re.findall(r'"([^"]*)"', str(links[i]))
+                links[i] = temp[1]
+            print(len(links), links)
+
+            i = 1
+            concerts_desc = []
+            for link in links:
+                concert = f_specific_event_link(link)
+                concerts_desc.append(concert)
+
+                break
+                if i >= 2:
+                    break
+                i += 1
+
+            print(concerts_desc)
 
         if specific_event_link:
             return f_specific_event_link(specific_event_link)
         # TODO
         # elif num_events:
         #    return f_num_events(num_events)
-        # elif ALL:
-        #     return f_ALL()
+        elif ALL:
+            return f_ALL()
         else:
             print("please specify what to scrape")
             pass
