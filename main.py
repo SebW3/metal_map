@@ -24,8 +24,5 @@ from database import Database
 url = "https://www.biletomat.pl/bilety/sacramental-petrification-of-europe-2023-13491/"
 scrape_data = WebScraper("biletomat")
 
-concerts = scrape_data.scrape_data(specific_event_link=url)
+concerts = scrape_data.scrape_data(ALL=True)
 print(concerts)
-
-# url = "https://www.biletomat.pl/bilety/antigama-lublin-13573/"
-# print(scrape_data.scrape_data(specific_event_link=url))

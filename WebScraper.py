@@ -15,9 +15,10 @@ class WebScraper:
 
     def openAI(self, description=None):
         # analise description for concert info
-
+        temp = openAI.bands_from_description(description)
+        print(temp)
+        return temp
         # TODO
-        print("TODO")
 
     def scrape_data(self, specific_event_link=None, num_events=None, ALL=None):
         if "facebook" in self.url:
@@ -188,9 +189,9 @@ class WebScraper:
             localization = [concert_info[5], concert_info[6] + concert_info[8]]
 
             description = soup.find_all(class_="description-block__text-block")[1].get_text().strip()
-            temp = self.openAI(description=description)  # TODO
+
             #print(description)
-            bands_playing = None
+            bands_playing = self.openAI(description=description)  # TODO
 
             # TODO ticket_price, short_description
             ticket_price = None
