@@ -24,5 +24,13 @@ from database import Database
 url = "https://www.biletomat.pl/bilety/sacramental-petrification-of-europe-2023-13491/"
 scrape_data = WebScraper("biletomat")
 
+database = Database()
+
 concerts = scrape_data.scrape_data(ALL=True)
-print(concerts)
+print("hello", concerts)
+
+database.add_concert_to_database(concerts)
+
+# for concert in concerts:
+#     print(concert)
+#     database.add_concert_to_database(concert)

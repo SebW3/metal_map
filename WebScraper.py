@@ -185,20 +185,25 @@ class WebScraper:
                     concert_info.remove(item)
 
             title = concert_info[2]
-            date = concert_info[3] + concert_info[4]  # TODO one format
-            localization = [concert_info[5], concert_info[6] + concert_info[8]]
+            date = concert_info[3].split()[0] + " " + concert_info[3].split()[-1]
+            # localization = [concert_info[5], concert_info[6] + concert_info[8]]
+            localization = [concert_info[8], concert_info[5] + concert_info[6]]
 
             description = soup.find_all(class_="description-block__text-block")[1].get_text().strip()
 
             #print(description)
             bands_playing = self.openAI(description=description)  # TODO
 
+            if bands_playing == "n/a":
+                # if band name not found in description then it is most likely in the title
+                bands_playing = title.split()[0].lower().capitalize()
+
             # TODO ticket_price, short_description
             ticket_price = None
             short_description = None
 
 
-            return [title, bands_playing, date, localization, ticket_price, short_description]  # TODO!
+            return [None, title, bands_playing, date, localization, ticket_price, short_description, None, None]  # TODO!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
         def f_ALL(num_events=None):
@@ -223,6 +228,7 @@ class WebScraper:
                 i += 1
 
             print(concerts_desc)
+            return concerts_desc
 
         if specific_event_link:
             return f_specific_event_link(specific_event_link)
