@@ -38,8 +38,7 @@ class WebScraper:
             print("downloading specific event data")
             response = requests.get(specific_event_link)
 
-            concert_number = int((specific_event_link).split("koncert=")[1][:5])  # TODO maybe change in future to str
-            print(concert_number)
+            concert_number = int((specific_event_link).split("koncert=")[1][:5])
             soup = BeautifulSoup(response.content, "html.parser")
             concert_element = soup.find_all(class_="gigItemIn")
             concerts = []
@@ -96,12 +95,10 @@ class WebScraper:
                 if "(www)" in bands_playing:
                     bands_playing.remove("(www)")
 
-                print("+"*100)
-                #print(data)
+
                 print([concert_number, title, bands_playing, concert_date, localization, price, added_date, change_date, additional_info, None, "rockmetal.pl"])
 
                 if len(concert_element) == 1:  # if NOT festival return info, otherwise continue appending data
-                    print("HELLOOOO " * 100)
                     return [concert_number, title, bands_playing, concert_date, localization, price, added_date, change_date, additional_info, None, "rockmetal.pl"]
                 concerts.append([concert_number, title, bands_playing, concert_date, localization, price, added_date, change_date, additional_info, None, "rockmetal.pl"])
 
@@ -188,13 +185,9 @@ class WebScraper:
             concert_number = specific_event_link.split("-")[-1][:-1]
             title = concert_info[2]
             concert_date = concert_info[3].split()[0] + " " + concert_info[3].split()[-1]
-            # localization = [concert_info[5], concert_info[6] + concert_info[8]]
             localization = [concert_info[8], concert_info[5] + concert_info[6]]
-            change_date = temp = datetime.date.today().strftime('%d.%m.%Y')  # no info on the website
-
+            change_date = datetime.date.today().strftime('%d.%m.%Y')  # no info on the website
             description = soup.find_all(class_="description-block__text-block")[1].get_text().strip()
-
-            #print(description)
             bands_playing = self.openAI(description=description)
 
             if bands_playing == "n/a":
@@ -205,8 +198,9 @@ class WebScraper:
             ticket_price = None
             short_description = None
 
-                # [concert_number, title, bands_playing, when,          where,        price,     added_date, change_date, uwagi]), short_description, "biletomat.pl"]
-            return [concert_number, title, bands_playing, concert_date, localization, ticket_price, None, change_date, None, short_description, "biletomat.pl"]  # TODO!!!!!!!!!!!!!!!!!!!!!!!!!
+            print([concert_number, title, bands_playing, concert_date, localization, ticket_price, None, change_date, None, short_description, "biletomat.pl"])
+            # [concert_number, title, bands_playing, concert_date, localization, ticket_price, added_date, change_date, additional_info, short_description, source]
+            return [concert_number, title, bands_playing, concert_date, localization, ticket_price, None, change_date, None, short_description, "biletomat.pl"]
 
 
         def f_ALL(num_events=None):
@@ -223,14 +217,15 @@ class WebScraper:
             concerts_desc = []
             for link in links:
                 concert = f_specific_event_link(link)
-                concerts_desc.append(concert)
+                concerts_desc.append([concert])
 
-                break
+                print("timer 1 sec")
+                time.sleep(1)
+
                 if i >= 2:
                     break
                 i += 1
 
-            print(concerts_desc)
             return concerts_desc
 
         if specific_event_link:

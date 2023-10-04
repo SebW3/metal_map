@@ -14,7 +14,3 @@ def bands_from_description(description):
     )
 
     return response.choices[0].message.content
-
-# print(response)
-# print("-"*100)
-# print(response.choices[0].message.content)

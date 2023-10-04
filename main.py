@@ -30,10 +30,10 @@ scrape_data = WebScraper("biletomat")
 concerts = scrape_data.scrape_data(ALL=True)
 print("hello", concerts)
 
-database.add_concert_to_database(concerts)
+#database.add_concert_to_database(concerts)
 
-# for concert in concerts:
-#     print(concert)
-#     database.add_concert_to_database(concert)
+for concert in concerts:
+    print(concert)
+    database.add_concert_to_database(concert)
 
 database.close_db_connection()
