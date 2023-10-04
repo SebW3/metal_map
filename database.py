@@ -185,10 +185,10 @@ class Database:
                     print("concert info updated")
                 else:
                     self.cursor.execute(
-                        "INSERT INTO concerts_poland (concert_number, name, concert_size, bands_playing, concert_date, localization, ticket_price, added_date, change_date, additional_info) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                        "INSERT INTO concerts_poland (concert_number, name, concert_size, bands_playing, concert_date, localization, ticket_price, added_date, change_date, additional_info, short_description, source) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
                         (
                         concert[0], concert[1], "medium", bands_playing[:-2], concert[3], localization[:-2], concert[5],
-                        concert[6], concert[7], concert[8]))
+                        concert[6], concert[7], concert[8], concert[9], concert[10]))
                     print("concert added")
                 self.connection.commit()
 

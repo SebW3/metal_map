@@ -3,6 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import openAI
+import datetime
 # from selenium import webdriver
 # import facebook
 # from logins import facebook_api_login
@@ -52,12 +53,12 @@ class WebScraper:
                 else:
                     title = None
                 bands_playing = []
-                where = [None, None, None]  # place, club, address
+                localization = [None, None, None]  # place, club, address
                 price = None
                 added_date = None
                 change_date = None
-                when = None
-                uwagi = None
+                concert_date = None
+                additional_info = None
 
                 for element in concert_element_text:
                     if element == "" or len(element) <= 2 and not "zł" in element:  # skip non-printable
@@ -74,12 +75,12 @@ class WebScraper:
                             bands_playing.append(data[i+j])
                             j += 1
                     elif data[i] == "Kiedy:":
-                        when = data[i+1]
+                        concert_date = data[i+1].split()[0]
                     elif data[i] == "Gdzie:":
-                        for j in range(len(where)-1):
+                        for j in range(len(localization)-1):
                             if ":" in data[i+j+1]:
                                 break
-                            where[j] = data[i+j+1]
+                            localization[j] = data[i+j+1]
                     elif data[i] == "Cena:":
                         price = data[i+1]
                     elif "Dodane:" in data[i]:
@@ -89,7 +90,7 @@ class WebScraper:
                         else:
                             added_date = data[i][8:]
                     elif data[i] == "Uwagi:":
-                        uwagi = data[i+1]
+                        additional_info = data[i+1]
 
 
                 if "(www)" in bands_playing:
@@ -97,12 +98,12 @@ class WebScraper:
 
                 print("+"*100)
                 #print(data)
-                print([concert_number, title, bands_playing, when, where, price, added_date, change_date, uwagi])
+                print([concert_number, title, bands_playing, concert_date, localization, price, added_date, change_date, additional_info, None, "rockmetal.pl"])
 
                 if len(concert_element) == 1:  # if NOT festival return info, otherwise continue appending data
                     print("HELLOOOO " * 100)
-                    return [concert_number, title, bands_playing, when, where, price, added_date, change_date, uwagi]
-                concerts.append([concert_number, title, bands_playing, when, where, price, added_date, change_date, uwagi])
+                    return [concert_number, title, bands_playing, concert_date, localization, price, added_date, change_date, additional_info, None, "rockmetal.pl"]
+                concerts.append([concert_number, title, bands_playing, concert_date, localization, price, added_date, change_date, additional_info, None, "rockmetal.pl"])
 
             return [concerts]
 
@@ -184,26 +185,28 @@ class WebScraper:
                 if len(item) < 2:
                     concert_info.remove(item)
 
+            concert_number = specific_event_link.split("-")[-1][:-1]
             title = concert_info[2]
-            date = concert_info[3].split()[0] + " " + concert_info[3].split()[-1]
+            concert_date = concert_info[3].split()[0] + " " + concert_info[3].split()[-1]
             # localization = [concert_info[5], concert_info[6] + concert_info[8]]
             localization = [concert_info[8], concert_info[5] + concert_info[6]]
+            change_date = temp = datetime.date.today().strftime('%d.%m.%Y')  # no info on the website
 
             description = soup.find_all(class_="description-block__text-block")[1].get_text().strip()
 
             #print(description)
-            bands_playing = self.openAI(description=description)  # TODO
+            bands_playing = self.openAI(description=description)
 
             if bands_playing == "n/a":
                 # if band name not found in description then it is most likely in the title
-                bands_playing = title.split()[0].lower().capitalize()
+                bands_playing = [title.split()[0].lower().capitalize()]
 
             # TODO ticket_price, short_description
             ticket_price = None
             short_description = None
 
-
-            return [None, title, bands_playing, date, localization, ticket_price, short_description, None, None]  # TODO!!!!!!!!!!!!!!!!!!!!!!!!!
+                # [concert_number, title, bands_playing, when,          where,        price,     added_date, change_date, uwagi]), short_description, "biletomat.pl"]
+            return [concert_number, title, bands_playing, concert_date, localization, ticket_price, None, change_date, None, short_description, "biletomat.pl"]  # TODO!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
         def f_ALL(num_events=None):
