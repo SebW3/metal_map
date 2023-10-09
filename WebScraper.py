@@ -189,15 +189,15 @@ class WebScraper:
             localization = [concert_info[5], concert_info[2] + concert_info[3]]
             change_date = datetime.date.today().strftime('%d.%m.%Y')  # no info on the website
             description = soup.find_all(class_="description-block__text-block")[1].get_text().strip()
-            bands_playing = [self.openAI(description=description)]
+            bands_playing = [openAI.bands_from_description(description)]
 
             if bands_playing[0] == "n/a":
                 # if band name not found in description then it is most likely in the title
                 bands_playing = [title.split()[0].lower().capitalize()]
 
             # TODO ticket_price, short_description
-            ticket_price = None
-            short_description = None
+            ticket_price = soup.find(class_="tickets-list__list").find(class_="ticket-card__pricing").get_text().split()[0].strip() + " zł"
+            short_description = openAI.create_short_description(description)
 
             print([concert_number, title, bands_playing, concert_date, localization, ticket_price, None, change_date, None, short_description, "biletomat.pl"])
             # [concert_number, title, bands_playing, concert_date, localization, ticket_price, added_date, change_date, additional_info, short_description, source]
