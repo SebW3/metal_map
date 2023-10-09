@@ -170,9 +170,10 @@ class WebScraper:
     def scrape_biletomat_data(self, specific_event_link=None, num_events=None, ALL=None):  # this one will use openAI to analyse text
         def f_specific_event_link(specific_event_link):
             print("downloading specific event data")
+
             response = requests.get(specific_event_link)
             soup = BeautifulSoup(response.content, "html.parser")
-            header = soup.find(class_="product-header")
+            header = soup.find(class_="product-header__details")
 
             concert_info = header.get_text().replace("\n\n\n", "").replace("  ", "")
 
@@ -183,14 +184,14 @@ class WebScraper:
                     concert_info.remove(item)
 
             concert_number = specific_event_link.split("-")[-1][:-1]
-            title = concert_info[2]
-            concert_date = concert_info[3].split()[0] + " " + concert_info[3].split()[-1]
-            localization = [concert_info[8], concert_info[5] + concert_info[6]]
+            title = soup.find(class_="product-header__title").get_text().strip()
+            concert_date = concert_info[0].split()[0] + " " + concert_info[0].split()[-1]
+            localization = [concert_info[5], concert_info[2] + concert_info[3]]
             change_date = datetime.date.today().strftime('%d.%m.%Y')  # no info on the website
             description = soup.find_all(class_="description-block__text-block")[1].get_text().strip()
-            bands_playing = self.openAI(description=description)
+            bands_playing = [self.openAI(description=description)]
 
-            if bands_playing == "n/a":
+            if bands_playing[0] == "n/a":
                 # if band name not found in description then it is most likely in the title
                 bands_playing = [title.split()[0].lower().capitalize()]
 
