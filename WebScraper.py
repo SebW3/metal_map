@@ -99,8 +99,8 @@ class WebScraper:
                 print([concert_number, title, bands_playing, concert_date, localization, price, added_date, change_date, additional_info, None, "rockmetal.pl"])
 
                 if len(concert_element) == 1:  # if NOT festival return info, otherwise continue appending data
-                    return [concert_number, title, bands_playing, concert_date, localization, price, added_date, change_date, additional_info, None, "rockmetal.pl"]
-                concerts.append([concert_number, title, bands_playing, concert_date, localization, price, added_date, change_date, additional_info, None, "rockmetal.pl"])
+                    return [concert_number, title, bands_playing, concert_date, localization, price, added_date, change_date, additional_info, None, specific_event_link]
+                concerts.append([concert_number, title, bands_playing, concert_date, localization, price, added_date, change_date, additional_info, None, specific_event_link])
 
             return [concerts]
 
@@ -173,20 +173,15 @@ class WebScraper:
 
             response = requests.get(specific_event_link)
             soup = BeautifulSoup(response.content, "html.parser")
-            header = soup.find(class_="product-header__details")
-
-            concert_info = header.get_text().replace("\n\n\n", "").replace("  ", "")
-
-            concert_info = concert_info.splitlines()
-
-            for item in concert_info:  # remove whitespaces
-                if len(item) < 2:
-                    concert_info.remove(item)
 
             concert_number = specific_event_link.split("-")[-1][:-1]
             title = soup.find(class_="product-header__title").get_text().strip()
-            concert_date = concert_info[0].split()[0] + " " + concert_info[0].split()[-1]
-            localization = [concert_info[5], concert_info[2] + concert_info[3]]
+            temp = ""
+            if len(soup.find(class_="product-detail__description").get_text()) > 2:
+                godz = soup.find(class_="product-detail__description").get_text().strip()
+                temp = ", " + godz[-5:]
+            concert_date = soup.find(class_="product-detail").get_text().split(", ")[0].strip() + temp.strip()
+            localization = [soup.find(itemprop="addressLocality").get_text(), soup.find(itemprop="location").find(itemprop="name").get_text().split(",")[0] + ", " + soup.find(itemprop="streetAddress").get_text()]
             change_date = datetime.date.today().strftime('%d.%m.%Y')  # no info on the website
             description = soup.find_all(class_="description-block__text-block")[1].get_text().strip()
             bands_playing = [openAI.bands_from_description(description)]
@@ -197,11 +192,12 @@ class WebScraper:
 
             # TODO ticket_price, short_description
             ticket_price = soup.find(class_="tickets-list__list").find(class_="ticket-card__pricing").get_text().split()[0].strip() + " zł"
-            short_description = openAI.create_short_description(description)
+            #short_description = openAI.create_short_description(description)
+            short_description = None
 
             print([concert_number, title, bands_playing, concert_date, localization, ticket_price, None, change_date, None, short_description, "biletomat.pl"])
             # [concert_number, title, bands_playing, concert_date, localization, ticket_price, added_date, change_date, additional_info, short_description, source]
-            return [concert_number, title, bands_playing, concert_date, localization, ticket_price, None, change_date, None, short_description, "biletomat.pl"]
+            return [concert_number, title, bands_playing, concert_date, localization, ticket_price, None, change_date, None, short_description, specific_event_link]
 
 
         def f_ALL(num_events=None):
