@@ -88,6 +88,7 @@ class WebScraper:
                             change_date = data[i].split(",")[1].strip()[8:]
                         else:
                             added_date = data[i][8:]
+                            change_date = added_date
                     elif data[i] == "Uwagi:":
                         additional_info = data[i+1]
 
@@ -190,7 +191,7 @@ class WebScraper:
                 # if band name not found in description then it is most likely in the title
                 bands_playing = [title.split()[0].lower().capitalize()]
 
-            # TODO ticket_price, short_description
+
             ticket_price = soup.find(class_="tickets-list__list").find(class_="ticket-card__pricing").get_text().split()[0].strip() + " zł"
             #short_description = openAI.create_short_description(description)
             short_description = None

@@ -1,6 +1,7 @@
 import mysql.connector
 from logins import database_login
 import metalarchives
+from datetime import datetime
 
 # TODO gathering band names
 
@@ -28,17 +29,79 @@ class Database:
             self.connection.close()
         print("Connection to database closed")
 
-    def check_if_already_exist(self, concert_number=None, concert_name=None, change_date=None):
+    def check_if_already_exist(self, concert_number=None, concert_name=None, change_date=None, concert=None):
         # returns None if no entry
         # returns 1 if already exists with latest update
         # returns 2 if already exists without latest update
 
 
+        def chceck_if_duplicate(concert=None):
+            print("chcecking if duplicate exists", concert)
+            concert_name = concert[1]
+            bands_playing = ""
+            for band in concert[2]:
+                bands_playing += band + ", "
+            bands_playing = bands_playing[:-2]
+            concert_date = concert[3]
+            concert_localization = concert[4]
+            ticket_price = concert[5]
+            change_date = concert[7]
+            print("change date ", change_date)
+            short_description = concert[9]
+            source = concert[10]
+            self.cursor.execute(f"SELECT id, name, bands_playing, concert_date, localization, ticket_price, change_date, short_description, source FROM concerts_poland WHERE concert_date LIKE '%{concert_date[:5]}%' AND localization LIKE '%{concert_localization[0]}%'")
+            concert_in_db = self.cursor.fetchall()[0]
+            print(concert_in_db)
+            if short_description == None: # TODO something is not working
+                short_description = concert_in_db[7] # bug?
+                if short_description == "None":
+                    short_description = None
+
+
+            for band in bands_playing:
+                if band in concert_in_db[2]:
+                    # updating concert info
+                    if concert_name and concert_in_db[1] == None:
+                        self.cursor.execute(f"UPDATE concerts_poland SET name = '{concert_name}' WHERE id = {concert_in_db[0]}")
+                        self.connection.commit()
+                        print("updated name")
+
+                    print(concert_in_db[6], change_date)
+                    if concert_in_db[5]:  # change_date # check if new info (most recent update)
+                        if change_date:
+                            if datetime.strptime(change_date, "%d.%m.%Y").strftime("%Y.%m.%d") <= datetime.strptime(concert_in_db[6], "%d.%m.%Y").strftime("%Y.%m.%d"):
+                                return None
+                        else:
+                            return None
+                    else:
+                        return None
+                    # update info in database
+                    if "rockmetal" in concert_in_db[8]:  # the most accurate info
+                        concert_localization = concert_in_db[4]
+
+                    source = concert_in_db[8] + " " + source
+
+                    self.cursor.execute(f"UPDATE concerts_poland SET bands_playing = '{bands_playing}', localization = '{concert_localization}', ticket_price = '{ticket_price}', change_date = '{change_date}', short_description = '{short_description}', source = '{source}' WHERE id = {concert_in_db[0]}")
+                    self.connection.commit()
+                    print("changes committed")
+                    return True
+
+            print("it is not a duplicate")
+            return False
+
+        try:
+            if chceck_if_duplicate(concert=concert) != False: return 1
+        except:
+            pass
+
         # check by concert_name
-        if concert_name:  # TODO potential bug if same concert repeats
+        if concert_name:  # TODO potential bug if same concert repeats # temp fix 3 lines below
             self.cursor.execute("SELECT name FROM concerts_poland WHERE name = %s", (concert_name,))
 
-            concert_name_db = self.cursor.fetchone()
+            try:
+                concert_name_db = self.cursor.fetchone()
+            except:
+                concert_name_db = self.cursor.fetchall[0]
             if concert_name_db:
                 concert_name_db = concert_name_db[0]
             if concert_name == concert_name_db:
@@ -159,7 +222,7 @@ class Database:
 
         else:  # normal concert
             concert = concerts[0]
-            check = self.check_if_already_exist(concert_number=concert[0], concert_name=concert[1], change_date=concert[7])
+            check = self.check_if_already_exist(concert_number=concert[0], concert_name=concert[1], change_date=concert[7], concert=concert)
             if check == 1:  # newest info = no action needed
                 return None
             else:  # adding / updating concert info
