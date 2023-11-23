@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 import re
 import openAI
 import datetime
-# from selenium import webdriver
+from selenium import webdriver
 # import facebook
 # from logins import facebook_api_login
 # from database import chceck_source
@@ -21,9 +21,9 @@ class WebScraper:
         return temp
         # TODO
 
-    def scrape_data(self, specific_event_link=None, num_events=None, ALL=None):
+    def scrape_data(self, specific_event_link=None, num_events=None, ALL=None, site=None, page=None):
         if "facebook" in self.url:
-            return self.scrape_facebook_data()
+            return self.scrape_facebook_data(site, page, ALL)
         elif "rockmetal" in self.url:
             return self.scrape_rockmetal_data(specific_event_link, num_events, ALL)
         elif "biletomat" in self.url:
@@ -165,7 +165,42 @@ class WebScraper:
             print("please specify what to scrape")
             pass
 
-    def scrape_facebook_data(self):
+    def scrape_facebook_data(self, site=None, page=None, ALL=None):
+        def get_newest_event_id(url):
+            driver = webdriver.Firefox()
+            driver.get(url)
+
+            page_content = driver.page_source
+            driver.quit()
+
+            soup = BeautifulSoup(page_content, 'html.parser')
+
+            # test
+            links = soup.find_all(href="")
+
+            test_links = []
+            i = 0
+            for link in links:
+                link_text = link.get_text()
+                if "https:\/\/www.facebook.com\/events\/" in link_text:
+                    test_links.append(link)
+
+            text = test_links[0].decode()
+
+            event_id = text.split("https:\/\/www.facebook.com\/events\/")[1][:16]
+            print(event_id)
+
+            return event_id
+
+        if ALL == True:
+            # use all functions
+            pass
+        elif page == "ThrashAttackLublin":
+            event_id = get_newest_event_id("https://www.facebook.com/ThrashAttackLublin")
+
+            pass
+        else:
+            print("please specify page")
         pass
 
     def scrape_biletomat_data(self, specific_event_link=None, num_events=None, ALL=None):  # this one will use openAI to analyse text

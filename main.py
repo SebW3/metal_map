@@ -3,7 +3,7 @@ from WebScraper import WebScraper
 from database import Database
 
 # Testing here
-database = Database()
+#database = Database()
 
 #database.add_concert_to_database(concerts)
 
@@ -29,14 +29,17 @@ database = Database()
 #
 # database.close_db_connection()
 
-rocmetal = WebScraper("rockmetal")
-biletomat = WebScraper("biletomat")
+# rocmetal = WebScraper("rockmetal")
+# biletomat = WebScraper("biletomat")
+#
+# concert = rocmetal.scrape_data(specific_event_link="https://www.rockmetal.pl/koncerty.html?koncert=57068_In_the_Woods____Saturnus_The_Foreshadowing")
+# database.add_concert_to_database([concert])
+#
+# concert = (biletomat.scrape_data(specific_event_link="https://www.biletomat.pl/bilety/in-the-woods-saturnus-krakow-14154/"))
+# database.add_concert_to_database([concert])
 
-concert = rocmetal.scrape_data(specific_event_link="https://www.rockmetal.pl/koncerty.html?koncert=57068_In_the_Woods____Saturnus_The_Foreshadowing")
-database.add_concert_to_database([concert])
+facebook_data = WebScraper("facebook")
+concert = facebook_data.scrape_data(page="ThrashAttackLublin")
+print(concert)
 
-concert = (biletomat.scrape_data(specific_event_link="https://www.biletomat.pl/bilety/in-the-woods-saturnus-krakow-14154/"))
-database.add_concert_to_database([concert])
-
-
-database.close_db_connection()
+#database.close_db_connection()
