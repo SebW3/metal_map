@@ -5,6 +5,7 @@ import re
 import openAI
 import datetime
 from selenium import webdriver
+from logins import profile_path
 # import facebook
 # from logins import facebook_api_login
 # from database import chceck_source
@@ -192,11 +193,46 @@ class WebScraper:
 
             return event_id
 
+
+        def read_event_info(event_id):
+            driver = webdriver.Firefox(firefox_profile=profile_path())
+            driver.get(f"https://www.facebook.com/events/{event_id}/")
+            time.sleep(3)
+            page_source = driver.page_source
+
+            soup = BeautifulSoup(page_source, "html.parser")
+
+            elements = soup.find_all(role="button")
+            #print(elements)
+            for element in elements:
+                if "See more" in element.get_text():
+                    #print(element)
+                    # button = driver.find_element_by_link_text("Decline optional cookies")
+                    # button.click()
+                    button = driver.find_element_by_xpath('//div[@role="button" and text()="See more"]')
+                    button.click()
+                    page_source = driver.page_source
+                    soup = BeautifulSoup(page_source, "html.parser")
+                    # print(soup.get_text())
+                    # print(soup.prettify())
+                    details = soup.find(class_="x1l90r2v xyamay9")
+                    #print(details.prettify())
+                    description = details.find(class_="x1pi30zi x1swvt13")
+                    print(description.get_text())
+                    temp = details.find(class_="x1pi30zi x1swvt13")
+                    temp.extract()
+                    print("---")
+                    print(details.prettify())
+
+            driver.quit()
+
+
         if ALL == True:
             # use all functions
             pass
-        elif page == "ThrashAttackLublin":
-            event_id = get_newest_event_id("https://www.facebook.com/ThrashAttackLublin")
+        elif page != None:
+            event_id = get_newest_event_id(f"https://www.facebook.com/{page}")
+            read_event_info(event_id)
 
             pass
         else:
