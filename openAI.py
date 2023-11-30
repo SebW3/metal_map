@@ -27,3 +27,16 @@ def create_short_description(description):
     )
 
     return response.choices[0].message.content
+
+def get_info_from_fb_desc(description):
+    prompt_system = "Twoim zadaniem jest wypisanie ważnych informacji z tego opisu koncertu. Napisz jakie zespoły będą grać i w nawiasie napisz ich gatunki jeśli zostały podane. Stosuj podany ci format odpowiedzi:\nZepoły: Zespół1 (gatunek), Zespół2 (gatunek);\nData i godzina: (data i godzina rozpoczęcia koncertu);\nLokalizacja: (ulica, miasto);\nCena biletu: (cena biletu)"
+    messages = [{"role": "system", "content": prompt_system}, {"role": "user", "content": description}]
+
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=messages,
+        api_key=openAI_api_key(),
+        temperature=0
+    )
+
+    return response.choices[0].message.content

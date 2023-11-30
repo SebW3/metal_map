@@ -206,25 +206,24 @@ class WebScraper:
             #print(elements)
             for element in elements:
                 if "See more" in element.get_text():
-                    #print(element)
-                    # button = driver.find_element_by_link_text("Decline optional cookies")
-                    # button.click()
                     button = driver.find_element_by_xpath('//div[@role="button" and text()="See more"]')
                     button.click()
                     page_source = driver.page_source
+                    driver.quit()
                     soup = BeautifulSoup(page_source, "html.parser")
-                    # print(soup.get_text())
-                    # print(soup.prettify())
                     details = soup.find(class_="x1l90r2v xyamay9")
-                    #print(details.prettify())
                     description = details.find(class_="x1pi30zi x1swvt13")
                     print(description.get_text())
-                    temp = details.find(class_="x1pi30zi x1swvt13")
-                    temp.extract()
-                    print("---")
-                    print(details.prettify())
+                    details.find(class_="x1pi30zi x1swvt13").extract()
 
-            driver.quit()
+
+                    localization = soup.find(class_="x9f619 x1n2onr6 x1ja2u2z xeuugli x1iyjqo2 xs83m0k x1xmf6yo x1emribx x1e56ztr x1i64zmx xjl7jj xnp8db0 x65f84u x1xzczws").find_all(class_="xu06os2 x1ok221b")
+                    club = localization[0].get_text()
+                    address = localization[1].get_text().split(",")[0].replace("ulica", "").strip()
+                    print(club)
+                    print(address)
+                    print("===")
+                    print(openAI.get_info_from_fb_desc(description.get_text()))
 
 
         if ALL == True:
