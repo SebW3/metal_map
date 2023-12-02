@@ -3,7 +3,7 @@ from WebScraper import WebScraper
 from database import Database
 
 # Testing here
-#database = Database()
+database = Database()
 
 #database.add_concert_to_database(concerts)
 
@@ -42,4 +42,6 @@ facebook_data = WebScraper("facebook")
 concert = facebook_data.scrape_data(page="ThrashAttackLublin")
 print(concert)
 
-#database.close_db_connection()
+database.add_concert_to_database(concert)
+
+database.close_db_connection()

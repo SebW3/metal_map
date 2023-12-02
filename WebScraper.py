@@ -189,7 +189,7 @@ class WebScraper:
             text = test_links[0].decode()
 
             event_id = text.split("https:\/\/www.facebook.com\/events\/")[1][:16]
-            print(event_id)
+            print("facebook event id = ", event_id)
 
             return event_id
 
@@ -203,7 +203,6 @@ class WebScraper:
             soup = BeautifulSoup(page_source, "html.parser")
 
             elements = soup.find_all(role="button")
-            #print(elements)
             for element in elements:
                 if "See more" in element.get_text():
                     button = driver.find_element_by_xpath('//div[@role="button" and text()="See more"]')
@@ -220,10 +219,35 @@ class WebScraper:
                     localization = soup.find(class_="x9f619 x1n2onr6 x1ja2u2z xeuugli x1iyjqo2 xs83m0k x1xmf6yo x1emribx x1e56ztr x1i64zmx xjl7jj xnp8db0 x65f84u x1xzczws").find_all(class_="xu06os2 x1ok221b")
                     club = localization[0].get_text()
                     address = localization[1].get_text().split(",")[0].replace("ulica", "").strip()
-                    print(club)
-                    print(address)
                     print("===")
-                    print(openAI.get_info_from_fb_desc(description.get_text()))
+                    concert_info = openAI.get_info_from_fb_desc(description.get_text()).split(";")
+                    print(concert_info)
+
+                    concert_number = event_id
+                    title = soup.find(class_="x78zum5 xdt5ytf x1wsgfga x9otpla").find(class_="x1lliihq x6ikm8r x10wlt62 x1n2onr6").get_text().strip()
+                    bands_playing = []
+                    if "n/a" not in concert_info[0]:
+                        bands_playing_from_fb = concert_info[0].replace("Zespoły: ", "")
+                        temp = bands_playing_from_fb.split(", ")
+                        for band_and_genre in temp:
+                            band = band_and_genre.split("(")[0].strip()
+                            #genre = band_and_genre.split("(")[1].replace(")", "").replace("/", ", ").strip() # TODO add to band genre database
+                            bands_playing.append(band)
+
+                    concert_date = None
+                    if "n/a" not in concert_info[1]:
+                        concert_date = concert_info[1].replace("Data i godzina: ", "").strip()
+                    # city = concert_info[2].split()[-1].strip() # TODO AI prompt
+                    city = concert_info[-1].replace("Miasto koncertu: ", "").replace(".", "").strip()
+                    localization = [city, club, address]
+                    price = None
+                    if "n/a" not in concert_info[3]:
+                        price = concert_info[3].replace("Cena biletu: ", "").split()[0].strip()
+                    added_date = None # TODO post date
+                    change_date = datetime.date.today().strftime('%d.%m.%Y')  # no info on the website
+                    additional_info = None
+
+                    return [concert_number, title, bands_playing, concert_date, localization, price, added_date, change_date, additional_info, None, f"https://www.facebook.com/events/{event_id}/"]
 
 
         if ALL == True:
@@ -231,9 +255,7 @@ class WebScraper:
             pass
         elif page != None:
             event_id = get_newest_event_id(f"https://www.facebook.com/{page}")
-            read_event_info(event_id)
-
-            pass
+            return read_event_info(event_id)
         else:
             print("please specify page")
         pass

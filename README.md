@@ -41,3 +41,13 @@ To scrape from facebook page type its name from web address<br>
 <code>concert = facebook_data.scrape_data(page="ThrashAttackLublin")</code>
 https://www.facebook.com/ThrashAttackLublin <br>
 That way you will be able to gather data from different pages
+
+---
+This is how 1 concert looks like. Variable to database from WebScraper should be in format below
+<code> 
+return [concert_number, title, bands_playing, concert_date, localization, price, added_date, change_date, additional_info, short_description, specific_event_link]
+</code>
+<br>where types are<br>
+<code>
+[int, str, list of strings, str, list of 3 or 2 strings (city, local, street address), str, str, str, str, str or None, str link to event]
+</code>

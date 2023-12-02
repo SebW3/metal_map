@@ -149,7 +149,7 @@ class Database:
             return None
 
     def add_concert_to_database(self, concerts):  # TODO add checking if already exists
-        if len(concerts) > 1:  # festival
+        if len(concerts) > 1 and type(concerts[0]) is type([]):  # festival
             print("adding festival info")
 
 
@@ -221,7 +221,10 @@ class Database:
                 self.connection.commit()
 
         else:  # normal concert
-            concert = concerts[0]
+            if len(concerts) == 1:
+                concert = concerts[0]
+            else:
+                concert = concerts
             check = self.check_if_already_exist(concert_number=concert[0], concert_name=concert[1], change_date=concert[7], concert=concert)
             if check == 1:  # newest info = no action needed
                 return None
@@ -238,19 +241,25 @@ class Database:
                     pass
                 print("adding concert info to database")
 
+                concert_size = "medium"
+                local_concerts = ["ThrashAttackLublin"]
+                for local_c in local_concerts:
+                    if local_c in concert[10]:  # check if it is small local concert
+                        concert_size = "local"
+
 
                 if check == 2:
                     self.cursor.execute(
                         "UPDATE concerts_poland SET name = %s, concert_size = %s, bands_playing = %s, concert_date = %s, localization = %s, ticket_price = %s, added_date = %s, change_date = %s, additional_info = %s WHERE concert_number = %s",
                         (
-                        concert[1], "medium", bands_playing[:-2], concert[3], localization[:-2], concert[5], concert[6],
+                        concert[1], concert_size, bands_playing[:-2], concert[3], localization[:-2], concert[5], concert[6],
                         concert[7], concert[8], concert[0]))
                     print("concert info updated")
                 else:
                     self.cursor.execute(
                         "INSERT INTO concerts_poland (concert_number, name, concert_size, bands_playing, concert_date, localization, ticket_price, added_date, change_date, additional_info, short_description, source) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
                         (
-                        concert[0], concert[1], "medium", bands_playing[:-2], concert[3], localization[:-2], concert[5],
+                        concert[0], concert[1], concert_size, bands_playing[:-2], concert[3], localization[:-2], concert[5],
                         concert[6], concert[7], concert[8], concert[9], concert[10]))
                     print("concert added")
                 self.connection.commit()
