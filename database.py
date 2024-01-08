@@ -149,6 +149,9 @@ class Database:
             return None
 
     def add_concert_to_database(self, concerts):  # TODO add checking if already exists
+        if concerts is None:
+            print("Nothing to add")
+            return None
         if len(concerts) > 1 and type(concerts[0]) is type([]):  # festival
             print("adding festival info")
 

@@ -186,7 +186,11 @@ class WebScraper:
                 if "https:\/\/www.facebook.com\/events\/" in link_text:
                     test_links.append(link)
 
-            text = test_links[0].decode()
+            try:
+                text = test_links[0].decode()
+            except:
+                print("No upcoming events on this page")
+                return None
 
             event_id = text.split("https:\/\/www.facebook.com\/events\/")[1][:16]
             print("facebook event id = ", event_id)
@@ -195,6 +199,8 @@ class WebScraper:
 
 
         def read_event_info(event_id):
+            if event_id is None:
+                return None
             driver = webdriver.Firefox(firefox_profile=profile_path())
             driver.get(f"https://www.facebook.com/events/{event_id}/")
             time.sleep(3)
