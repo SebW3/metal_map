@@ -268,7 +268,7 @@ class Database:
                 self.connection.commit()
 
 
-    def add_band_info_to_database(self, band_name):
+    def add_band_info_to_database(self, band_name, band_genre_other_source=None):
         def instert_band_name_and_genre(band_name):  # will I use it later?
             band_genre = metalarchives.get_genre(band_name)
 
@@ -282,7 +282,14 @@ class Database:
                 self.connection.commit()
             else:
                 print("band is not on www.metal-archives.com")
-                return None
+                if band_genre_other_source:
+                    self.cursor.execute("INSERT INTO bands (band_name) VALUES (%s)", (band_name,))
+                    print(f"Inserted {band_name} into 'bands'")
+                    self.connection.commit()
+
+                    self.cursor.execute("UPDATE bands SET band_genre = %s WHERE band_name = %s", (band_genre_other_source, band_name))
+                    print(f"band genre {band_genre_other_source} added to band named {band_name}")
+                    self.connection.commit()
 
 
         # chceck if band genre already exists
@@ -302,6 +309,11 @@ class Database:
             temp = self.cursor.fetchone()
 
             return temp
+
+
+def f_check_if_already_exist(event_id):
+    if Database.check_if_already_exist(concert_number=event_id):
+        return 0
 
 # def add_band_genre(band_name):  # for manual adding
 #     band_genre = metalarchives.get_genre(band_name)

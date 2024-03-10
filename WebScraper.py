@@ -5,10 +5,9 @@ import re
 import openAI
 import datetime
 from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
 from logins import profile_path
-# import facebook
-# from logins import facebook_api_login
-# from database import chceck_source
+from database import f_check_if_already_exist
 
 class WebScraper:
     concerts = []
@@ -22,9 +21,9 @@ class WebScraper:
         return temp
         # TODO
 
-    def scrape_data(self, specific_event_link=None, num_events=None, ALL=None, site=None, page=None):
+    def scrape_data(self, specific_event_link=None, num_events=None, ALL=None, group=None, page=None):
         if "facebook" in self.url:
-            return self.scrape_facebook_data(site, page, ALL)
+            return self.scrape_facebook_data(group, page, ALL)
         elif "rockmetal" in self.url:
             return self.scrape_rockmetal_data(specific_event_link, num_events, ALL)
         elif "biletomat" in self.url:
@@ -166,7 +165,7 @@ class WebScraper:
             print("please specify what to scrape")
             pass
 
-    def scrape_facebook_data(self, site=None, page=None, ALL=None):
+    def scrape_facebook_data(self, group=None, page=None, ALL=None):
         def get_newest_event_id(url):
             driver = webdriver.Firefox()
             driver.get(url)
@@ -200,6 +199,8 @@ class WebScraper:
 
         def read_event_info(event_id):
             if event_id is None:
+                return None
+            if f_check_if_already_exist(event_id=event_id):
                 return None
             driver = webdriver.Firefox(firefox_profile=profile_path())
             driver.get(f"https://www.facebook.com/events/{event_id}/")
@@ -255,6 +256,44 @@ class WebScraper:
 
                     return [concert_number, title, bands_playing, concert_date, localization, price, added_date, change_date, additional_info, None, f"https://www.facebook.com/events/{event_id}/"]
 
+        def get_event_ids_from_group(group):
+            driver = webdriver.Firefox(firefox_profile=profile_path())
+            driver.get(f"https://www.facebook.com/groups/{group}")
+
+            time.sleep(2)
+            button = driver.find_element_by_css_selector(".x92rtbv.x10l6tqk.x1tk7jg1.x1vjfegm")
+            # button = driver.find_element_by_class_name("x92rtbv x10l6tqk x1tk7jg1 x1vjfegm")
+            button.click()
+
+            html = driver.find_element_by_tag_name('html')
+            for i in range(10):
+                html.send_keys(Keys.END)
+                time.sleep(2)
+
+            page_content = driver.page_source
+            driver.quit()
+
+            soup = BeautifulSoup(page_content, 'html.parser')
+
+            # test
+            links = soup.find_all(href="")
+
+            test_links = []
+            i = 0
+            for link in links:
+                link_text = link.get_text()
+                if "https://www.facebook.com/events/" in link_text:
+                    test_links.append(link)
+
+            ids = []
+            for event in test_links:
+                text = event.decode()
+                event_id = text.split("https://www.facebook.com/events/")[1][:15]
+                ids.append(event_id)
+            ids = list(set(ids))
+            print("facebook event ids = ", ids)
+
+            return ids
 
         if ALL == True:
             # use all functions
@@ -262,8 +301,14 @@ class WebScraper:
         elif page != None:
             event_id = get_newest_event_id(f"https://www.facebook.com/{page}")
             return read_event_info(event_id)
+        elif group != None:
+            event_ids = get_event_ids_from_group(group)
+            events_data = []
+            for event_id in event_ids:
+                events_data.append(read_event_info(event_id))
+            return events_data
         else:
-            print("please specify page")
+            print("please specify page or group")
         pass
 
     def scrape_biletomat_data(self, specific_event_link=None, num_events=None, ALL=None):  # this one will use openAI to analyse text
