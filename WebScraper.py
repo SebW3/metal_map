@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 import re
 import openAI
 import datetime
+from random import randint, random
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from logins import profile_path
@@ -169,7 +170,7 @@ class WebScraper:
         def get_newest_event_id(url):
             driver = webdriver.Firefox()
             driver.get(url)
-
+            time.sleep(randint(4, 7)+random()*random()-random())
             page_content = driver.page_source
             driver.quit()
 
@@ -204,7 +205,7 @@ class WebScraper:
                 return None
             driver = webdriver.Firefox(firefox_profile=profile_path())
             driver.get(f"https://www.facebook.com/events/{event_id}/")
-            time.sleep(3)
+            time.sleep(3+random()*random()-random())
             page_source = driver.page_source
 
             soup = BeautifulSoup(page_source, "html.parser")
@@ -215,6 +216,7 @@ class WebScraper:
                     button = driver.find_element_by_xpath('//div[@role="button" and text()="See more"]')
                     button.click()
                     page_source = driver.page_source
+                    time.sleep(randint(4, 7)+random()*random()-random())
                     driver.quit()
                     soup = BeautifulSoup(page_source, "html.parser")
                     details = soup.find(class_="x1l90r2v xyamay9")
@@ -260,15 +262,22 @@ class WebScraper:
             driver = webdriver.Firefox(firefox_profile=profile_path())
             driver.get(f"https://www.facebook.com/groups/{group}")
 
-            time.sleep(2)
+            time.sleep(randint(2, 4)+random()*random()-random())
             button = driver.find_element_by_css_selector(".x92rtbv.x10l6tqk.x1tk7jg1.x1vjfegm")
             # button = driver.find_element_by_class_name("x92rtbv x10l6tqk x1tk7jg1 x1vjfegm")
             button.click()
+            time.sleep(randint(3, 5) + random() * random() - random())
 
             html = driver.find_element_by_tag_name('html')
+            b = 0
             for i in range(10):
+                a = 0
+                while a < 3 or abs(a - b) < 1.5:  # randomise key press interval
+                    a = random() * (10 + random())
+
+                b = a
                 html.send_keys(Keys.END)
-                time.sleep(2)
+                time.sleep(a)
 
             page_content = driver.page_source
             driver.quit()
