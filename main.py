@@ -38,10 +38,11 @@ database = Database()
 # concert = (biletomat.scrape_data(specific_event_link="https://www.biletomat.pl/bilety/in-the-woods-saturnus-krakow-14154/"))
 # database.add_concert_to_database([concert])
 
-facebook_data = WebScraper("facebook")
-concert = facebook_data.scrape_data(page="ThrashAttackLublin")
-print(concert)
+rockmetal = WebScraper("rockmetal")
+concerts = rockmetal.scrape_data(num_events=1)
+for concert in concerts:
+    database.add_concert_to_database(concert)
 
-database.add_concert_to_database(concert)
+print(database.normalize_band_names([1, 6], from_id_to_name=True))
 
 database.close_db_connection()

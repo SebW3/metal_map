@@ -148,6 +148,33 @@ class Database:
 
             return None
 
+    def normalize_band_names(self, band_names=None, from_id_to_name=False):
+        band_ids = []
+        print(band_names)
+        if from_id_to_name:  # convert from ids to names
+            for band in band_names:
+                self.cursor.execute(f"SELECT band_name FROM `bands` WHERE band_id = '{band}'")
+                band_id = self.cursor.fetchone()
+                if band_id is None:
+                    raise ValueError(f"Number '{band}' does not exist in database")
+                else:
+                    band_id = band_id[0]
+                band_ids.append(band_id)
+
+        else:  # convert from names to ids
+            for band in band_names:
+                self.cursor.execute(f"SELECT band_id FROM `bands` WHERE band_name = '{band}'")
+                band_id = self.cursor.fetchone()
+                if band_id is None:
+                    self.cursor.execute("INSERT INTO bands (band_name) VALUES (%s)", (band,))
+                    self.connection.commit()
+                    self.cursor.execute(f"SELECT band_id FROM `bands` WHERE band_name = '{band}'")
+                    band_id = self.cursor.fetchone()[0]
+                else:
+                    band_id = band_id[0]
+                band_ids.append(band_id)
+        return band_ids
+
     def add_concert_to_database(self, concerts):  # TODO add checking if already exists
         if concerts is None:
             print("Nothing to add")
@@ -233,8 +260,8 @@ class Database:
                 return None
             else:  # adding / updating concert info
                 bands_playing = ""
-                for band in concert[2]:
-                    bands_playing += band + ", "
+                for band in self.normalize_band_names(concert[2]):
+                    bands_playing += str(band) + ", "
 
                 localization = ""
                 try:
