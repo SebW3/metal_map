@@ -141,10 +141,7 @@ class WebScraper:
                 print(link)
                 data_ALL.append([f_specific_event_link(link)])
 
-                i += 1  # temp
-                if i > 3:
-                    break
-
+                i += 1
                 if num_events:
                     if i >= num_events:
                         print(f"downloaded {num_events} events")
